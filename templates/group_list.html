@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load header %}
+    {% header as groups %}
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% include 'include/header.html' %}
+    {% for group in groups %}
+        <div style="margin: 100px 0">
+            <h1 style="text-align: center">Группа: {{ group.title }}</h1>
+            <p style="text-align: center">Описание: {{ group.description }}</p>
+            <h3 style="text-align: center"><a href="{% url 'group' group.slug %}"> Все посты группы {{ group }}</a></h3>
+        </div>
+    {% endfor %}
+{% include 'include/footer.html' %}
+</body>
+</html>

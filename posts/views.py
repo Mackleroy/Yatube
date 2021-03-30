@@ -1,6 +1,8 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.views import View
+
 from .forms import PostForm
 from .models import Post, Group
 
@@ -32,7 +34,7 @@ class CreatePostView(View):
             form = form.save()
             form.author = request.user
             form.save()
-        return redirect(request.path)
+        return redirect('/')
 
 
 class GroupList(View):

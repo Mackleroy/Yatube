@@ -2,14 +2,15 @@
     <div style="display: flex; justify-content: flex-start">
         <p style="margin: 0 15px"><a href='{% url 'main_page' %}'>Главная</a></p>
         <p style="margin: 0 15px"><a href='{% url 'group_list' %}'>Группы</a></p>
+        {% if user.is_authenticated %}
         <p style="margin: 0 15px"><a href="{% url 'user_posts' user.username %}">Ваши посты</a></p>
-
+        {% endif %}
     </div>
     <div style="display: flex; justify-content: flex-end">
         {% if user.is_authenticated %}
-            <p style="margin: 0 15px"><a href="/">Выйти</a></p>
+            <p style="margin: 0 15px"><a href="{% url 'logout' %}">Выйти</a></p>
         {% else %}
-            <p style="margin: 0 15px"><a href="/">Войти</a></p>
+            <p style="margin: 0 15px"><a href="{% url 'login' %}">Войти</a></p>
             <p style="margin: 0 15px"><a href="{% url 'signup' %}">Зарегистрироваться</a></p>
         {% endif %}
     </div>

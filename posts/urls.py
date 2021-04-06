@@ -9,4 +9,11 @@ urlpatterns = [
     path('group_list/', views.GroupList.as_view(), name='group_list'),
     path('group/<slug:group_slug>/', views.MainPageView.as_view(), name='group'),
     path('', views.MainPageView.as_view(), name='main_page'),
+    path('<str:username>/', views.ProfileView.as_view(), name='profile'),
+    path('<str:username>/<slug:post_slug>/', views.PostView.as_view(), name='post_view'),
+    path(
+        '<str:username>/<slug:post_slug>/edit/',
+        views.PostEditView.as_view(),
+        name='post_edit'
+    ),
 ]

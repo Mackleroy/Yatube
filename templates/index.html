@@ -6,11 +6,10 @@
     <h3 style="text-align: center">Все посты группы {{ group }}</h3>
 {% endif %}
 <div style="margin: 50px 300px 0 300px">
-    <h3 ><a href="/create_post/">Создать пост</a></h3>
     {% if page %}
         {% for post in page %}
             <div>
-                <h1>{{ post.title }} </h1>
+                <h2><a href="{% url 'post_view' post.author.username post.slug %}">{{ post.title }}</a></h2>
                 <p>{{ post.text }}</p>
                     <div style="display: flex">
                         <p style="margin-right: 20px">{{ post.author }}</p>

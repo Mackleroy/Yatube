@@ -3,7 +3,7 @@
         <p style="margin: 10px 15px"><a href='{% url 'main_page' %}'>Главная</a></p>
         <p style="margin: 10px 15px"><a href='{% url 'group_list' %}'>Группы</a></p>
         {% if user.is_authenticated %}
-        <p style="margin: 10px 15px"><a href="{% url 'user_posts' user.username %}">Ваши посты</a></p>
+        <p style="margin: 10px 15px"><a href="{% url 'profile' user.username %}">Ваши посты</a></p>
         {% endif %}
     </div>
     <div style="display: flex; justify-content: flex-end">

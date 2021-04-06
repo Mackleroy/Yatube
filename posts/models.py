@@ -19,7 +19,8 @@ class Group(models.Model):
 
 
 class Post(models.Model):
-    author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE, max_length=70, null=True)
+    author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE, max_length=70,
+                               null=True, related_name='posts')
     group = models.ForeignKey(Group, verbose_name='Группа', on_delete=models.SET_NULL, blank=True, null=True)
     title = models.CharField("Заголовок", max_length=200)
     text = models.TextField("Текст", max_length=5000)

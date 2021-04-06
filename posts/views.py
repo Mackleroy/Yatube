@@ -27,7 +27,7 @@ class MainPageView(View):
 class CreatePostView(View):
     def get(self, request):
         form = PostForm
-        return render(request, 'create_post.html', {'form': form})
+        return render(request, 'create_edit_post.html', {'form': form, 'title': 'Создание записи', 'button': 'Создать'})
 
     def post(self, request):
         form = PostForm(request.POST)
@@ -35,9 +35,52 @@ class CreatePostView(View):
             form = form.save()
             form.author = request.user
             form.save()
-        return redirect('/')
+            return redirect('/')
 
 
 class GroupList(View):
     def get(self, request):
         return render(request, 'group_list.html')
+
+
+class ProfileView(View):
+    def get(self, request, username):
+        posts = Post.objects.filter(author__username=username).order_by('-published_date')
+        last_post = posts.first()
+        paginator = Paginator(posts, 3)
+        page_number = request.GET.get('page')
+        page = paginator.get_page(page_number)
+        return render(request, 'profile.html', {'post': last_post, 'page': page, 'paginator': paginator})
+
+
+class PostView(View):
+    def get(self, request, username, post_slug):
+        post = Post.objects.get(author__username=username, slug=post_slug)
+        return render(request, 'post.html', {'post': post})
+
+
+class PostEditView(View):
+    def get(self, request, username, post_slug):
+        post = Post.objects.get(slug=post_slug)
+        form = PostForm(instance=post)
+        if username == post.author.username:
+            return render(request, 'create_edit_post.html', {'form': form,
+                                                             'post_slug': post_slug,
+                                                             'title': 'Редактирование записи',
+                                                             'button': 'Обновить'}
+                          )
+        else:
+            error = 'Редактировать можно только свои посты'
+            return render(request, 'create_edit_post.html', {'error': error})
+
+    def post(self, request, username, post_slug):
+        form = PostForm(request.POST)
+        post = Post.objects.get(slug=post_slug)
+        if form.is_valid():
+            post.group = form.cleaned_data['group']
+            post.title = form.cleaned_data['title']
+            post.text = form.cleaned_data['text']
+            post.slug = form.cleaned_data['slug']
+            post.save()
+            print(post)
+            return redirect('/')

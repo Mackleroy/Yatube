@@ -1,3 +1,91 @@
-from django.test import TestCase
+from django.contrib.auth.models import User
+from django.test import TestCase, Client
+from django.urls import reverse
+
+from posts.models import Post
 
 
+class TestClient:
+    def setUp(self):
+        self.client = Client()
+        self.username = 'testuser'
+        self.password = 'difficult_password'
+        self.user = User.objects.create(username=self.username)
+        self.user.set_password(self.password)
+        self.user.save()
+        self.client.login(username=self.username, password=self.password)
+
+    def tearDown(self):
+        self.user.delete()
+
+
+class RegistrationAndProfilePageTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.username = 'testuser'
+        self.password = 'difficult_password'
+
+    def test_registration_and_profile_page(self):
+        response_reg = self.client.post(reverse('signup'), data={
+            'username': self.username,
+            'password1': self.password,
+            'password2': self.password
+        })
+        self.assertEqual(response_reg.status_code, 302)
+        self.assertEqual(response_reg.url, '/auth/login/')
+        self.client.login(username=self.username, password=self.password)
+        response_profile = self.client.get('/{0}/'.format(self.username))
+        self.assertEqual(response_profile.status_code, 200)
+        self.assertContains(response_profile, self.username)
+
+
+class PostTests(TestClient, TestCase):
+    def test_publication_on_all_pages(self):
+        title = 'Тестовый заголовок'
+        text = 'Текст тестового поста'
+        slug = 'test_slug'
+        self.client.login(username=self.username, password=self.password)
+        self.client.post(reverse('create_post'), data={
+            'title': title,
+            'text': text,
+            'slug': slug
+        })
+        response_post_view = self.client.get(reverse('post_view', args=[self.username, slug]))
+        self.assertContains(response_post_view, title and text)
+        response_profile = self.client.get(reverse('profile', args=[self.username]))
+        self.assertContains(response_profile, title and text)
+        response_main_page = self.client.get(reverse('main_page'))
+        self.assertContains(response_main_page, title and text)
+
+
+class UserPublishPost(TestClient, TestCase):
+    def test_auth_user_can_post(self):
+        response = self.client.get(reverse('create_post'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_not_auth_user_cant_post(self):
+        self.client.get(reverse('logout'))
+        response = self.client.get(reverse('create_post'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_auth_user_can_edit_and_all_pages_change(self):
+        title = 'Тестовый заголовок'
+        text = 'Текст тестового поста'
+        slug = 'test_slug'
+        title_new = 'Тестовый новый заголовок'
+        text_new = 'Новый текст тестового поста'
+        Post.objects.create(author=self.user,
+                            title=title,
+                            text=text,
+                            slug=slug)
+        self.client.get(reverse('post_edit', args=[self.username, slug]))
+        response_edit = self.client.post(reverse('post_edit', args=[self.username, slug]), data={
+            'title': title_new,
+            'text': text_new
+        })
+        response_post_view = self.client.get(reverse('post_view', args=[self.username, slug]))
+        self.assertContains(response_post_view, title_new and text_new)
+        response_profile = self.client.get(reverse('profile', args=[self.username]))
+        self.assertContains(response_profile, title_new and text_new)
+        response_main_page = self.client.get(reverse('main_page'))
+        self.assertContains(response_main_page, title_new and text_new)

@@ -1,18 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-    {% if error %}
 
-    <p>{{ error }}</p>
-
-    {% else %}
-
-        {{ title }}
+    <h2>{{ title }}</h2>
 
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button name="prev_slug" value="{{ post_slug }}">{{ button }}</button>
+        {% if title == 'Редактирование записи' %}
+            <p>Slug: {{ post_slug }}</p>
+        {% endif %}
+        <button>{{ button }}</button>
     </form>
-
+    {% if title == 'Редактирование записи' %}
+    <form action="{% url 'delete_post' post_slug %}">
+        <button>Удалить запись</button>
+    </form>
     {% endif %}
+
+
 {% endblock %}

@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 
-from .forms import PostForm
+from .forms import PostForm, PostEditForm
 from .models import Post, Group
 
 
@@ -46,11 +46,14 @@ class GroupList(View):
 class ProfileView(View):
     def get(self, request, username):
         posts = Post.objects.filter(author__username=username).order_by('-published_date')
-        last_post = posts.first()
-        paginator = Paginator(posts, 3)
-        page_number = request.GET.get('page')
-        page = paginator.get_page(page_number)
-        return render(request, 'profile.html', {'post': last_post, 'page': page, 'paginator': paginator})
+        if posts:
+            last_post = posts.first()
+            paginator = Paginator(posts, 3)
+            page_number = request.GET.get('page')
+            page = paginator.get_page(page_number)
+            return render(request, 'profile.html', {'post': last_post, 'page': page, 'paginator': paginator})
+        else:
+            return render(request, 'profile.html')
 
 
 class PostView(View):
@@ -62,25 +65,32 @@ class PostView(View):
 class PostEditView(View):
     def get(self, request, username, post_slug):
         post = Post.objects.get(slug=post_slug)
-        form = PostForm(instance=post)
-        if username == post.author.username:
+        form = PostEditForm(instance=post)
+        if request.user.username == post.author.username:
             return render(request, 'create_edit_post.html', {'form': form,
                                                              'post_slug': post_slug,
                                                              'title': 'Редактирование записи',
                                                              'button': 'Обновить'}
                           )
         else:
-            error = 'Редактировать можно только свои посты'
-            return render(request, 'create_edit_post.html', {'error': error})
+            return redirect('post_view', username=username, post_slug=post_slug)
 
     def post(self, request, username, post_slug):
-        form = PostForm(request.POST)
+        form = PostEditForm(request.POST)
         post = Post.objects.get(slug=post_slug)
         if form.is_valid():
             post.group = form.cleaned_data['group']
             post.title = form.cleaned_data['title']
             post.text = form.cleaned_data['text']
-            post.slug = form.cleaned_data['slug']
             post.save()
-            print(post)
             return redirect('/')
+        else:
+            return redirect(request.path)
+
+
+class DeletePostView(View):
+    def get(self, request, post_slug):
+        post = Post.objects.get(slug=post_slug)
+        if request.user.username == post.author.username:
+            post.delete()
+        return redirect('profile', username=request.user.username)

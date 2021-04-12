@@ -58,7 +58,7 @@ class ProfileView(View):
 
 class PostView(View):
     def get(self, request, username, post_slug):
-        post = Post.objects.get(author__username=username, slug=post_slug)
+        post = get_object_or_404(Post, author__username=username, slug=post_slug)
         return render(request, 'post.html', {'post': post})
 
 
@@ -94,3 +94,11 @@ class DeletePostView(View):
         if request.user.username == post.author.username:
             post.delete()
         return redirect('profile', username=request.user.username)
+
+
+def page_not_found(request, exception):
+    return render(request, "misc/404.html", {"path": request.path}, status=404)
+
+
+def server_error(request):
+    return render(request, "misc/500.html", status=500)

@@ -83,3 +83,10 @@ class RegistrationAndProfilePageTests(TestCase):
         response_profile = self.client.get('/{0}/'.format(self.username))
         self.assertEqual(response_profile.status_code, 200)
         self.assertContains(response_profile, self.username)
+
+
+class ErrorsTest(TestCase):
+    def test_404(self):
+        response = self.client.get(reverse('post_view', args=['not_existing_user', 'not_existing_post_slug']))
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, 'misc/404.html')

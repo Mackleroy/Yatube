@@ -17,6 +17,11 @@ from django.contrib import admin
 from django.contrib.flatpages import views
 from django.urls import path, include
 
+from posts.views import server_error, page_not_found
+
+handler404 = "posts.views.page_not_found"
+handler500 = "posts.views.server_error"
+
 urlpatterns = [
     path("auth/", include("django.contrib.auth.urls")),
     path("auth/", include("Users.urls")),
@@ -24,6 +29,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('about-us/', views.flatpage, {'url': '/about-us/'}, name='about'),
     path('terms/', views.flatpage, {'url': '/terms/'}, name='terms'),
+    path('404/', page_not_found),
+    path('500/', server_error),
+
     path('', include('posts.urls')),
 
 ]
+
+

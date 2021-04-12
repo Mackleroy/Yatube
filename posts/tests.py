@@ -33,8 +33,8 @@ class PostTests(TestClient, TestCase):
             'slug': slug
         })
 
-        for url in self.urls_to_check:
-            response = self.client.get(reverse(url, args=self.urls_to_check[url]))
+        for url, value in self.urls_to_check.items():
+            response = self.client.get(reverse(url, args=value))
             self.assertContains(response, title and text)
 
 
@@ -60,9 +60,8 @@ class UserPublishPost(TestClient, TestCase):
             'title': title_new,
             'text': text_new
         })
-        urls_to_check = {'post_view': [self.username, self.slug], 'profile': [self.username], 'main_page': []}
-        for url in urls_to_check:
-            response = self.client.get(reverse(url, args=urls_to_check[url]))
+        for url, value in self.urls_to_check.items():
+            response = self.client.get(reverse(url, args=value))
             self.assertContains(response, title_new and text_new)
 
 

@@ -1,8 +1,11 @@
+import os
+from os.path import exists
+
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from posts.models import Post
+from posts.models import Post, Group
 
 
 class TestClient:
@@ -23,19 +26,20 @@ class TestClient:
 
 class PostTests(TestClient, TestCase):
     def test_publication_on_all_pages(self):
-        title = 'Тестовый заголовок'
-        text = 'Текст тестового поста'
-        slug = 'test_slug'
         self.client.login(username=self.username, password=self.password)
         self.client.post(reverse('create_post'), data={
-            'title': title,
-            'text': text,
-            'slug': slug
+            'title': self.title,
+            'text': self.text,
+            'slug': self.slug
         })
 
-        for url, value in self.urls_to_check.items():
-            response = self.client.get(reverse(url, args=value))
-            self.assertContains(response, title and text)
+        for url, args in self.urls_to_check.items():
+            try:
+                response = self.client.get(reverse(url, args=args))
+                self.assertContains(response, self.title and self.text, msg_prefix=url)
+            except AssertionError as ae:
+                ae.args += (f'Ошибка в url: {url}',)
+                raise
 
 
 class UserPublishPost(TestClient, TestCase):
@@ -60,9 +64,13 @@ class UserPublishPost(TestClient, TestCase):
             'title': title_new,
             'text': text_new
         })
-        for url, value in self.urls_to_check.items():
-            response = self.client.get(reverse(url, args=value))
-            self.assertContains(response, title_new and text_new)
+        for url, args in self.urls_to_check.items():
+            try:
+                response = self.client.get(reverse(url, args=args))
+                self.assertContains(response, title_new and text_new)
+            except AssertionError as ae:
+                ae.args += (f'Ошибка в url: {url}',)
+                raise
 
 
 class RegistrationAndProfilePageTests(TestCase):
@@ -90,3 +98,54 @@ class ErrorsTest(TestCase):
         response = self.client.get(reverse('post_view', args=['not_existing_user', 'not_existing_post_slug']))
         self.assertEqual(response.status_code, 404)
         self.assertTemplateUsed(response, 'misc/404.html')
+
+
+class ImagesTest(TestCase):
+    def setUp(self) -> None:
+        self.client = Client()
+        self.username = 'testuser'
+        self.password = 'difficult_password'
+        self.slug = 'test_slug'
+        self.group_slug = 'test_group_slug'
+        self.user = User.objects.create_user(username=self.username, password=self.password)
+        self.client.login(username=self.username, password=self.password)
+        self.group = Group.objects.create(title='test_group', slug=self.group_slug)
+        self.post = Post.objects.create(author=self.user, group=self.group, text='test', title='test', slug=self.slug)
+        self.urls_to_check = {'post_view': [self.username, self.slug],
+                              'profile': [self.username],
+                              'group': [self.group_slug],
+                              'main_page': []}
+
+    def tearDown(self) -> None:
+        if exists('media/posts/test_img.jpg'):
+            os.remove('media/posts/test_img.jpg')
+
+    def test_image_exists(self):
+        with open('media/test/test_img.jpg', 'rb') as img:
+            response = self.client.post(reverse('post_edit', args=[self.username, self.slug]), data={
+                'author': self.user,
+                'group': self.group.id,
+                'text': 'test',
+                'title': 'new_title',
+                'slug': self.slug,
+                'image': img,
+            })
+        for url, args in self.urls_to_check.items():
+            try:
+                response = self.client.get(reverse(url, args=args))
+                self.assertContains(response, '<img')
+            except AssertionError as ae:
+                ae.args += (f'Ошибка в url: {url}',)
+                raise
+
+    def test_invalid_file_to_image_field(self):
+        with open('media/test/test.txt', 'rb') as img:
+            response = self.client.post(reverse('post_edit', args=[self.username, self.slug]), data={
+                'author': self.user,
+                'group': self.group.id,
+                'text': 'test',
+                'title': 'new_title',
+                'slug': self.slug,
+                'image': img,
+            })
+        self.assertEqual(response.url, '/testuser/test_slug/edit/')

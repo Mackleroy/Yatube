@@ -7,22 +7,21 @@
                     <div class="card">
                             <div class="card-body">
                                     <div class="h2">
-                                        {{ user.first_name }}
+                                        {{ group.title }}
                                     </div>
-                                    <div class="h3 text-muted">
-                                         {{  user.username }}
+                                    <div class="h4 text-muted">
+                                         {{  group.description }}
                                     </div>
                             </div>
                             <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
                                             <div class="h6 text-muted">
                                             Подписчиков: XXX <br />
-                                            Подписан: XXX
                                             </div>
                                     </li>
                                     <li class="list-group-item">
                                             <div class="h6 text-muted">
-                                                Записей: {{ user.posts.count }}
+                                                Записей: {{ group.posts.count }}
                                             </div>
                                     </li>
                                     <li class="list-group-item">
@@ -58,16 +57,16 @@
                     </div>
                     {% endif %}
                     {% if page %}
-                        {% for post in page %}
-                            <div>
-                                <h1><a href="{% url 'post_view' post.author.username post.slug %}">{{ post.title }}</a></h1>
-                                <p>{{ post.text }}</p>
-                                    <div style="display: flex">
-                                        <p style="margin-right: 20px">{{ post.author }}</p>
-                                        <p>{{ post.published_date }}</p>
-                                    </div>
-                            </div>
-                        {% endfor %}
+                    {% for post in page %}
+                        <div>
+                            <h1><a href="{% url 'post_view' post.author.username post.slug %}">{{ post.title }}</a></h1>
+                            <p>{{ post.text }}</p>
+                                <div style="display: flex">
+                                    <p style="margin-right: 20px">{{ post.author }}</p>
+                                    <p>{{ post.published_date }}</p>
+                                </div>
+                        </div>
+                    {% endfor %}
                     {% else %}
                         <h2>Здесь нет постов</h2>
                     {% endif %}

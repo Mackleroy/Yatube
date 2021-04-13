@@ -8,20 +8,22 @@ from .models import Post, Group
 
 
 class MainPageView(View):
-    def get(self, request, group_slug=None, username=None, template='index.html'):
+    def get(self, request, group_slug=None, template='index.html'):
         context = {}
         posts = Post.objects.all().order_by('-published_date')
         if group_slug is not None:
             posts = posts.filter(group__slug=group_slug)
             group = Group.objects.get(slug=group_slug)
+            template = 'group.html'
             context['group'] = group
-        if username is not None:
-            user = User.objects.get(username=username)
-            posts = posts.filter(author_id=user)
-        paginator = Paginator(posts, 3)
+        first_post = posts.first()
+        paginator = Paginator(posts.exclude(id=first_post.id), 3)
         page_number = request.GET.get('page')
         page = paginator.get_page(page_number)
-        return render(request, template, {'page': page, 'paginator': paginator})
+        context['page'] = page
+        context['paginator'] = paginator
+        context['post'] = first_post
+        return render(request, template, context)
 
 
 class CreatePostView(View):
@@ -30,12 +32,14 @@ class CreatePostView(View):
         return render(request, 'create_edit_post.html', {'form': form, 'title': 'Создание записи', 'button': 'Создать'})
 
     def post(self, request):
-        form = PostForm(request.POST)
+        form = PostForm(request.POST, files=request.FILES or None)
         if form.is_valid():
             form = form.save()
             form.author = request.user
             form.save()
             return redirect('/')
+        # else:
+        #     return redirect(request.path)
 
 
 class GroupList(View):
@@ -47,11 +51,11 @@ class ProfileView(View):
     def get(self, request, username):
         posts = Post.objects.filter(author__username=username).order_by('-published_date')
         if posts:
-            last_post = posts.first()
-            paginator = Paginator(posts, 3)
+            first_post = posts.first()
+            paginator = Paginator(posts.exclude(id=first_post.id), 3)
             page_number = request.GET.get('page')
             page = paginator.get_page(page_number)
-            return render(request, 'profile.html', {'post': last_post, 'page': page, 'paginator': paginator})
+            return render(request, 'profile.html', {'post': first_post, 'page': page, 'paginator': paginator})
         else:
             return render(request, 'profile.html')
 
@@ -76,12 +80,13 @@ class PostEditView(View):
             return redirect('post_view', username=username, post_slug=post_slug)
 
     def post(self, request, username, post_slug):
-        form = PostEditForm(request.POST)
+        form = PostEditForm(request.POST, files=request.FILES or None)
         post = Post.objects.get(slug=post_slug)
         if form.is_valid():
             post.group = form.cleaned_data['group']
             post.title = form.cleaned_data['title']
             post.text = form.cleaned_data['text']
+            post.image = form.cleaned_data['image']
             post.save()
             return redirect('/')
         else:

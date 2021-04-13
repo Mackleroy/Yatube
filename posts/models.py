@@ -21,12 +21,14 @@ class Group(models.Model):
 class Post(models.Model):
     author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE, max_length=70,
                                null=True, related_name='posts')
-    group = models.ForeignKey(Group, verbose_name='Группа', on_delete=models.SET_NULL, blank=True, null=True)
+    group = models.ForeignKey(Group, verbose_name='Группа', on_delete=models.SET_NULL, blank=True,
+                              null=True, related_name='posts')
     title = models.CharField("Заголовок", max_length=200)
     text = models.TextField("Текст", max_length=5000)
     published_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     moderation = models.BooleanField("Модерация", default=True)
     slug = models.SlugField("url", max_length=30)
+    image = models.ImageField(upload_to='posts/', blank=True, null=True)
 
     def __str__(self):
         return self.title

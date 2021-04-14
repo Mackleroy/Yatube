@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Post, Group
+from .models import Post, Group, Comment
 
 
 class ActionsAdmin(admin.ModelAdmin):
@@ -39,3 +39,10 @@ class GroupAdmin(ActionsAdmin):
     list_editable = ('moderation', 'creator')
     inlines = [PostsInline]
     actions = ['unpublish', 'publish']
+
+
+@admin.register(Comment)
+class CommentAdmin(ActionsAdmin):
+    list_display = ('post', 'author', 'published_date', 'text')
+    list_filter = ('post', 'author', 'published_date')
+    search_fields = ('post', 'author', 'published_date', 'text')

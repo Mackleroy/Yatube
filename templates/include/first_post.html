@@ -1,0 +1,29 @@
+<div class="card mb-3 mt-1 shadow-sm">
+    {% load thumbnail %}
+    {% thumbnail post.image "1200x400" crop="center" upscale=True as im %}
+        <img class="card-img" src="{{ im.url }}">
+    {% endthumbnail %}
+        <div class="card-body">
+                <p class="card-text">
+                        <a href="/{{ user.username }}/"><strong class="d-block text-gray-dark">{{ post.author.username }}</strong></a>
+                        <h4><a href="{% url 'post_view' post.author.username post.slug %}">{{ post.title }}</a></h4>
+                        <p>{{ post.text }}</p>
+
+                {% if post.group %}
+                    <a class="card-link muted" href="{% url 'group' post.group.slug %}">
+                            <strong class="d-block text-gray-dark">#{{ post.group.title }}</strong>
+                    </a>
+                {% endif %}
+
+                <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group ">
+                                <a class="btn btn-sm text-muted" href="{% url 'post_view' post.author.username post.slug %}" role="button">Комментарии</a>
+                                {% if user.username == post.author.username %}
+                                <a class="btn btn-sm text-muted" href="/{{ user.username }}/{{ post.slug }}/edit" role="button">Редактировать</a>
+                                {% endif %}
+                        </div>
+                        <small class="text-muted">{{ post.published_date }}</small>
+                </div>
+        </div>
+</div>
+

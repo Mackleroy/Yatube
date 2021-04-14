@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.contrib.flatpages import views
 from django.urls import path, include
 
+import debug_toolbar
+
 from Yatube import settings
 from posts.views import server_error, page_not_found
 
@@ -31,6 +33,7 @@ urlpatterns = [
     path('terms/', views.flatpage, {'url': '/terms/'}, name='terms'),
     path('404/', page_not_found),
     path('500/', server_error),
+    path("__debug__/", include(debug_toolbar.urls)),
 
     path('', include('posts.urls')),
 

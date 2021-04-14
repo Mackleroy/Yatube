@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load header %}
-{% header as groups %}
 {% for group in groups %}
     <div style="margin: 100px 0">
         <h1 style="text-align: center">Группа: {{ group.title }}</h1>

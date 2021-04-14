@@ -1,9 +1,12 @@
+import datetime as dt
 import os
 from os.path import exists
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.test import TestCase, Client
 from django.urls import reverse
+
 
 from posts.models import Post, Group
 
@@ -18,7 +21,10 @@ class TestClient:
         self.title = 'Тестовый заголовок'
         self.text = 'Текст тестового поста'
         self.slug = 'test_slug'
-        self.urls_to_check = {'post_view': [self.username, self.slug], 'profile': [self.username], 'main_page': []}
+        self.urls_to_check = {'post_view': [self.username, self.slug], 'profile': [self.username],
+                              'main_page': []
+                              }
+        cache.clear()
 
     def tearDown(self):
         self.user.delete()
@@ -32,11 +38,10 @@ class PostTests(TestClient, TestCase):
             'text': self.text,
             'slug': self.slug
         })
-
         for url, args in self.urls_to_check.items():
             try:
                 response = self.client.get(reverse(url, args=args))
-                self.assertContains(response, self.title and self.text, msg_prefix=url)
+                self.assertContains(response, self.title and self.text)
             except AssertionError as ae:
                 ae.args += (f'Ошибка в url: {url}',)
                 raise
@@ -122,7 +127,7 @@ class ImagesTest(TestCase):
 
     def test_image_exists(self):
         with open('media/test/test_img.jpg', 'rb') as img:
-            response = self.client.post(reverse('post_edit', args=[self.username, self.slug]), data={
+            self.client.post(reverse('post_edit', args=[self.username, self.slug]), data={
                 'author': self.user,
                 'group': self.group.id,
                 'text': 'test',
@@ -130,6 +135,7 @@ class ImagesTest(TestCase):
                 'slug': self.slug,
                 'image': img,
             })
+        cache.clear()
         for url, args in self.urls_to_check.items():
             try:
                 response = self.client.get(reverse(url, args=args))
@@ -149,3 +155,33 @@ class ImagesTest(TestCase):
                 'image': img,
             })
         self.assertEqual(response.url, '/testuser/test_slug/edit/')
+
+
+class CacheTest(TestCase):
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='difficult_password')
+        cache.clear()
+        for i in range(5):
+            Post.objects.create(title=f'Title{i}', text=f'Text{i}', slug=f'slug_{i}', author=self.user)
+
+    def tearDown(self) -> None:
+        cache.delete('main_page')
+
+    def test_visit_main_page(self):
+        start_time1 = dt.datetime.now()
+        self.client.get(reverse('main_page'))
+        duration1 = dt.datetime.now() - start_time1
+
+        start_time2 = dt.datetime.now()
+        self.client.get(reverse('main_page'))
+        duration2 = dt.datetime.now() - start_time2
+        self.assertTrue(duration1/2 > duration2)
+
+    def test_delay_new_post(self):
+        self.client.get(reverse('main_page'))
+        i = '_delay'
+        post = Post.objects.create(title=f'Title{i}', text=f'Text{i}', slug=f'slug_{i}', author=self.user)
+        response = self.client.get(reverse('main_page'))
+        self.assertNotContains(response, post.title and post.text)
+

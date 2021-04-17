@@ -1,73 +1,52 @@
-{% extends 'base.html' %}
-{% block content %}
-{% load thumbnail %}
-<main role="main" class="container">
-    <div class="row">
-            <div class="col-md-3 mb-3 mt-1">
+<div class="col-md-3 mb-3 mt-1">
                     <div class="card">
                             <div class="card-body">
                                     <div class="h2">
-                                        {{ group.title }}
+                                        {{ author.first_name }}
                                     </div>
-                                    <div class="h4 text-muted">
-                                         {{  group.description }}
+                                    <div class="h3 text-muted">
+                                         {{ author.username }}
                                     </div>
                             </div>
                             <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
                                             <div class="h6 text-muted">
-                                            Подписчиков: {{ group.follower.count }} <br />
+                                            Подписчиков: {{ author.follower.count }} <br />
+                                            Подписан: {{ author.following.count }}
                                             </div>
                                     </li>
                                     <li class="list-group-item">
                                             <div class="h6 text-muted">
-                                                Записей: {{ group.posts.count }}
+                                                Записей: {{ author.posts.count }}
                                             </div>
                                     </li>
-                                    {% if user == group.creator %}
+                                    {% if user == author %}
                                     <li class="list-group-item">
                                             <div class="h6 text-muted">
-                                                <h4><a href="{% url 'create_post' %}">Создать пост</a></h4>
+                                                    <h4><a href="{% url 'create_post' %}">Создать пост</a></h4>
                                             </div>
                                     </li>
                                     {% else %}
                                         {% if user.is_authenticated %}
                                             <li class="list-group-item">
-                                                {% if following %}
-                                                    <form method="post" action="{% url 'unfollow_group' group.slug %}">
+                                                    {% if following %}
+                                                    <form method="post" action="{% url 'unfollow' author.username %}">
                                                         {% csrf_token %}
                                                         <button class="btn btn-lg btn-light">
                                                                 Отписаться
                                                         </button>
                                                     </form>
-                                                {% else %}
-                                                    <form method="post" action="{% url 'follow_group' group.slug %}">
+                                                    {% else %}
+                                                    <form method="post" action="{% url 'follow' author.username %}">
                                                         {% csrf_token %}
                                                         <button class="btn btn-lg btn-primary">
                                                         Подписаться
                                                         </button>
                                                     </form>
-                                                {% endif %}
+                                                    {% endif %}
                                             </li>
                                         {% endif %}
                                     {% endif %}
                             </ul>
                     </div>
             </div>
-
-            <div class="col-md-9">
-                    {% if page %}
-                    {% for post in page %}
-                        {% include 'include/post_item.html' %}
-                    {% endfor %}
-                    {% else %}
-                        <h2>Здесь нет постов</h2>
-                    {% endif %}
-
-                    {% if page.has_other_pages %}
-                            {% include "paginator.html" with items=page paginator=paginator %}
-                    {% endif %}
-            </div>
-    </div>
-</main>
-{% endblock %}

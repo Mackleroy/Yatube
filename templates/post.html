@@ -3,31 +3,7 @@
 {% load thumbnail %}
 <main role="main" class="container">
     <div class="row">
-            <div class="col-md-3 mb-3 mt-1">
-                    <div class="card">
-                            <div class="card-body">
-                                    <div class="h2">
-                                        {{ post.author.first_name }}
-                                    </div>
-                                    <div class="h3 text-muted">
-                                         {{  post.author.username }}
-                                    </div>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">
-                                            <div class="h6 text-muted">
-                                            Подписчиков: XXX <br />
-                                            Подписан: XXX
-                                            </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                            <div class="h6 text-muted">
-                                                Записей: {{ post.author.posts.count }}
-                                            </div>
-                                    </li>
-                            </ul>
-                    </div>
-            </div>
+            {% include 'include/profile_preview.html' %}
 
             <div class="col-md-9">
                     <div class="card mb-3 mt-1 shadow-sm">
@@ -42,7 +18,6 @@
                                         </p>
                                         <div class="d-flex justify-content-between align-items-center">
                                                 <div class="btn-group ">
-                                                        <a class="btn btn-sm text-muted" href="/{{ user.username }}/{{ post.slug }}/" role="button">Добавить комментарий</a>
                                                         {% if user.username == post.author.username %}
                                                         <a class="btn btn-sm text-muted" href="{% url 'post_edit' post.author.username post.slug %}" role="button">Редактировать</a>
                                                         {% endif %}

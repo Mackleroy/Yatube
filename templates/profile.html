@@ -3,41 +3,12 @@
 {% load thumbnail %}
 <main role="main" class="container">
     <div class="row">
-            <div class="col-md-3 mb-3 mt-1">
-                    <div class="card">
-                            <div class="card-body">
-                                    <div class="h2">
-                                        {{ user.first_name }}
-                                    </div>
-                                    <div class="h3 text-muted">
-                                         {{  user.username }}
-                                    </div>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">
-                                            <div class="h6 text-muted">
-                                            Подписчиков: XXX <br />
-                                            Подписан: XXX
-                                            </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                            <div class="h6 text-muted">
-                                                Записей: {{ user.posts.count }}
-                                            </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                            <div class="h6 text-muted">
-                                                <h4><a href="{% url 'create_post' %}">Создать пост</a></h4>
-                                            </div>
-                                    </li>
-                            </ul>
-                    </div>
-            </div>
+            {% include 'include/profile_preview.html' %}
 
             <div class="col-md-9">
                     {% if page %}
                         {% for post in page %}
-                            {% include 'include/first_post.html' %}
+                            {% include 'include/post_item.html' %}
                         {% endfor %}
                     {% else %}
                         <h2>Здесь нет постов</h2>

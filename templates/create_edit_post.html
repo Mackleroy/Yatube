@@ -12,7 +12,8 @@
         <button>{{ button }}</button>
     </form>
     {% if title == 'Редактирование записи' %}
-    <form action="{% url 'delete_post' post_slug %}">
+    <form method="post" action="{% url 'delete_post' post_slug %}">
+        {% csrf_token %}
         <button>Удалить запись</button>
     </form>
     {% endif %}

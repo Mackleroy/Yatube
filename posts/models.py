@@ -51,3 +51,24 @@ class Comment(models.Model):
     class Meta:
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(User,  verbose_name="Автор", on_delete=models.CASCADE, blank=True,
+                             null=True, related_name='follower',)
+    group = models.ForeignKey(Group, verbose_name="Группа", on_delete=models.CASCADE, blank=True,
+                              null=True, related_name='follower')
+    author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE, max_length=70,
+                               null=True, related_name='following')
+
+    def __str__(self):
+        try:
+            return self.group.title
+        except AttributeError:
+            return self.author.username
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+

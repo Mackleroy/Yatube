@@ -1,10 +1,11 @@
 <div style="display: flex; justify-content: space-between">
     <div style="display: flex; justify-content: flex-start">
         <p style="margin: 10px 15px"><a href='{% url 'main_page' %}'>Главная</a></p>
-        <p style="margin: 10px 15px"><a href='{% url 'group_list' %}'>Группы</a></p>
         {% if user.is_authenticated %}
-        <p style="margin: 10px 15px"><a href="{% url 'profile' user.username %}">Ваши посты</a></p>
+            <p style="margin: 10px 15px"><a href='{% url 'your_follows' user.username %}'>Избранные авторы</a></p>
+            <p style="margin: 10px 15px"><a href="{% url 'profile' user.username %}">Ваши посты</a></p>
         {% endif %}
+        <p style="margin: 10px 15px"><a href='{% url 'group_list' %}'>Группы</a></p>
     </div>
     <div style="display: flex; justify-content: flex-end">
         {% if user.is_authenticated %}

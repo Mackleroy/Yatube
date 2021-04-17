@@ -5,7 +5,7 @@
     {% endthumbnail %}
         <div class="card-body">
                 <p class="card-text">
-                        <a href="/{{ user.username }}/"><strong class="d-block text-gray-dark">{{ post.author.username }}</strong></a>
+                        <a href="{% url 'profile' post.author.username %}"><strong class="d-block text-gray-dark">{{ post.author.username }}</strong></a>
                         <h4><a href="{% url 'post_view' post.author.username post.slug %}">{{ post.title }}</a></h4>
                         <p>{{ post.text }}</p>
 

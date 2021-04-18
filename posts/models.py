@@ -4,7 +4,9 @@ from django.db import models
 
 class Group(models.Model):
     title = models.CharField("Заголовок", max_length=70)
-    creator = models.ForeignKey(User, verbose_name="Создатель", on_delete=models.CASCADE, max_length=70, null=True)
+    creator = models.ForeignKey(User, verbose_name="Создатель",
+                                on_delete=models.CASCADE, max_length=70,
+                                null=True)
     slug = models.SlugField("url", max_length=30)
     description = models.TextField("Описание", max_length=500)
     template = models.CharField("Шаблон", max_length=100, default='group.html')
@@ -19,9 +21,11 @@ class Group(models.Model):
 
 
 class Post(models.Model):
-    author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE, max_length=70,
+    author = models.ForeignKey(User, verbose_name="Автор",
+                               on_delete=models.CASCADE, max_length=70,
                                null=True, related_name='posts')
-    group = models.ForeignKey(Group, verbose_name='Группа', on_delete=models.SET_NULL, blank=True,
+    group = models.ForeignKey(Group, verbose_name='Группа',
+                              on_delete=models.SET_NULL, blank=True,
                               null=True, related_name='posts')
     title = models.CharField("Заголовок", max_length=200)
     text = models.TextField("Текст", max_length=5000)
@@ -39,8 +43,11 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, verbose_name='Пост', on_delete=models.CASCADE, null=True, related_name='comments')
-    author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE, max_length=70,
+    post = models.ForeignKey(Post, verbose_name='Пост',
+                             on_delete=models.CASCADE, null=True,
+                             related_name='comments')
+    author = models.ForeignKey(User, verbose_name="Автор",
+                               on_delete=models.CASCADE, max_length=70,
                                null=True, related_name='comments')
     published_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     text = models.TextField('Текст', max_length=1000)
@@ -54,11 +61,14 @@ class Comment(models.Model):
 
 
 class Follow(models.Model):
-    user = models.ForeignKey(User,  verbose_name="Автор", on_delete=models.CASCADE, blank=True,
-                             null=True, related_name='follower',)
-    group = models.ForeignKey(Group, verbose_name="Группа", on_delete=models.CASCADE, blank=True,
+    user = models.ForeignKey(User, verbose_name="Автор",
+                             on_delete=models.CASCADE, blank=True,
+                             null=True, related_name='follower', )
+    group = models.ForeignKey(Group, verbose_name="Группа",
+                              on_delete=models.CASCADE, blank=True,
                               null=True, related_name='follower')
-    author = models.ForeignKey(User, verbose_name="Автор", on_delete=models.CASCADE, max_length=70,
+    author = models.ForeignKey(User, verbose_name="Автор",
+                               on_delete=models.CASCADE, max_length=70,
                                null=True, related_name='following')
 
     def __str__(self):
@@ -70,5 +80,3 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-
-

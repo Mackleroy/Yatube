@@ -1,4 +1,3 @@
-import datetime as dt
 import os
 from os.path import exists
 
@@ -7,21 +6,22 @@ from django.core.cache import cache
 from django.test import TestCase, Client
 from django.urls import reverse
 
-
 from posts.models import Post, Group, Follow, Comment
 
 
-class TestClient:
+class TestManyUrlsToCheck:
     def setUp(self):
         self.client = Client()
         self.username = 'testuser'
         self.password = 'difficult_password'
-        self.user = User.objects.create_user(username=self.username, password=self.password)
+        self.user = User.objects.create_user(username=self.username,
+                                             password=self.password)
         self.client.login(username=self.username, password=self.password)
         self.title = 'Тестовый заголовок'
         self.text = 'Текст тестового поста'
         self.slug = 'test_slug'
-        self.urls_to_check = {'post_view': [self.username, self.slug], 'profile': [self.username],
+        self.urls_to_check = {'post_view': [self.username, self.slug],
+                              'profile': [self.username],
                               'main_page': []
                               }
         cache.clear()
@@ -30,7 +30,7 @@ class TestClient:
         self.user.delete()
 
 
-class PostTests(TestClient, TestCase):
+class PostTests(TestManyUrlsToCheck, TestCase):
     def test_publication_on_all_pages(self):
         self.client.login(username=self.username, password=self.password)
         self.client.post(reverse('create_post'), data={
@@ -47,7 +47,7 @@ class PostTests(TestClient, TestCase):
                 raise
 
 
-class UserPublishPost(TestClient, TestCase):
+class UserPublishPost(TestManyUrlsToCheck, TestCase):
     def test_auth_user_can_post(self):
         response = self.client.get(reverse('create_post'))
         self.assertEqual(response.status_code, 200)
@@ -65,10 +65,11 @@ class UserPublishPost(TestClient, TestCase):
                             text=self.text,
                             slug=self.slug)
         self.client.get(reverse('post_edit', args=[self.username, self.slug]))
-        self.client.post(reverse('post_edit', args=[self.username, self.slug]), data={
-            'title': title_new,
-            'text': text_new
-        })
+        self.client.post(reverse('post_edit', args=[self.username, self.slug]),
+                         data={
+                             'title': title_new,
+                             'text': text_new
+                         })
         for url, args in self.urls_to_check.items():
             try:
                 response = self.client.get(reverse(url, args=args))
@@ -102,14 +103,17 @@ class RegistrationTests(TestCase):
         self.assertEqual(response_reg.status_code, 302)
         self.assertEqual(response_reg.url, '/auth/login/')
         self.client.login(username=self.username, password=self.password)
-        response_profile = self.client.get(reverse('profile', args=[self.username]))
+        response_profile = self.client.get(
+            reverse('profile', args=[self.username]))
         self.assertEqual(response_profile.status_code, 200)
         self.assertContains(response_profile, self.username)
 
 
 class ErrorsTest(TestCase):
     def test_404(self):
-        response = self.client.get(reverse('post_view', args=['not_existing_user', 'not_existing_post_slug']))
+        response = self.client.get(reverse('post_view',
+                                           args=['not_existing_user',
+                                                 'not_existing_post_slug']))
         self.assertEqual(response.status_code, 404)
         self.assertTemplateUsed(response, 'misc/404.html')
 
@@ -121,14 +125,19 @@ class ImagesTest(TestCase):
         self.password = 'difficult_password'
         self.slug = 'test_slug'
         self.group_slug = 'test_group_slug'
-        self.user = User.objects.create_user(username=self.username, password=self.password)
+        self.user = User.objects.create_user(username=self.username,
+                                             password=self.password)
         self.client.login(username=self.username, password=self.password)
-        self.group = Group.objects.create(title='test_group', slug=self.group_slug)
-        self.post = Post.objects.create(author=self.user, group=self.group, text='test', title='test', slug=self.slug)
+        self.group = Group.objects.create(title='test_group',
+                                          slug=self.group_slug)
+        self.post = Post.objects.create(author=self.user, group=self.group,
+                                        text='test', title='test',
+                                        slug=self.slug)
         self.urls_to_check = {'post_view': [self.username, self.slug],
                               'profile': [self.username],
                               'group': [self.group_slug],
                               'main_page': []}
+        cache.clear()
 
     def tearDown(self) -> None:
         if exists('media/posts/test_img.jpg'):
@@ -136,15 +145,17 @@ class ImagesTest(TestCase):
 
     def test_image_exists(self):
         with open('media/test/test_img.jpg', 'rb') as img:
-            self.client.post(reverse('post_edit', args=[self.username, self.slug]), data={
-                'author': self.user,
-                'group': self.group.id,
-                'text': 'test',
-                'title': 'new_title',
-                'slug': self.slug,
-                'image': img,
-            })
-        cache.clear()
+            self.client.post(
+                reverse('post_edit', args=[self.username, self.slug]),
+                data={
+                    'author': self.user,
+                    'group': self.group.id,
+                    'text': 'test',
+                    'title': 'new_title',
+                    'slug': self.slug,
+                    'image': img,
+                })
+
         for url, args in self.urls_to_check.items():
             try:
                 response = self.client.get(reverse(url, args=args))
@@ -155,44 +166,41 @@ class ImagesTest(TestCase):
 
     def test_invalid_file_to_image_field(self):
         with open('media/test/test.txt', 'rb') as img:
-            response = self.client.post(reverse('post_edit', args=[self.username, self.slug]), data={
-                'author': self.user,
-                'group': self.group.id,
-                'text': 'test',
-                'title': 'new_title',
-                'slug': self.slug,
-                'image': img,
-            })
+            response = self.client.post(
+                reverse('post_edit', args=[self.username, self.slug]), data={
+                    'author': self.user,
+                    'group': self.group.id,
+                    'text': 'test',
+                    'title': 'new_title',
+                    'slug': self.slug,
+                    'image': img,
+                })
         self.assertEqual(response.url, '/testuser/test_slug/edit/')
 
 
-# class CacheTest(TestCase):
-#     def setUp(self) -> None:
-#         self.client = Client()
-#         self.user = User.objects.create_user(username='testuser', password='difficult_password')
-#         cache.clear()
-#         for i in range(5):
-#             Post.objects.create(title=f'Title{i}', text=f'Text{i}', slug=f'slug_{i}', author=self.user)
-#
-#     def tearDown(self) -> None:
-#         cache.delete('main_page')
-#
-#     def test_visit_main_page(self):
-#         start_time1 = dt.datetime.now()
-#         self.client.get(reverse('main_page'))
-#         duration1 = dt.datetime.now() - start_time1
-#
-#         start_time2 = dt.datetime.now()
-#         self.client.get(reverse('main_page'))
-#         duration2 = dt.datetime.now() - start_time2
-#         self.assertTrue(duration1/2 > duration2)
-#
-#     def test_delay_new_post(self):
-#         self.client.get(reverse('main_page'))
-#         i = '_delay'
-#         post = Post.objects.create(title=f'Title{i}', text=f'Text{i}', slug=f'slug_{i}', author=self.user)
-#         response = self.client.get(reverse('main_page'))
-#         self.assertNotContains(response, post.title and post.text)
+class CacheTest(TestCase):
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser',
+                                             password='difficult_password')
+        cache.clear()
+        for i in range(5):
+            Post.objects.create(title=f'Title{i}', text=f'Text{i}',
+                                slug=f'slug_{i}', author=self.user)
+
+    def test_visit_main_page(self):
+        with self.assertNumQueries(2):
+            response = self.client.get(reverse('main_page'))
+            self.assertEqual(response.status_code, 200)
+            response = self.client.get(reverse('main_page'))
+            self.assertEqual(response.status_code, 200)
+
+    def test_delay_new_post(self):
+        self.client.get(reverse('main_page'))
+        post = Post.objects.create(title=f'Title_delay', text=f'Text_delay',
+                                   slug=f'slug_delay', author=self.user)
+        response = self.client.get(reverse('main_page'))
+        self.assertNotContains(response, post.title and post.text)
 
 
 class FollowUnfollowTest(TestCase):
@@ -200,50 +208,64 @@ class FollowUnfollowTest(TestCase):
         self.client = Client()
         self.username = 'testuser'
         self.password = 'difficult_password'
-        self.user = User.objects.create_user(username=self.username, password=self.password)
-        self.author = User.objects.create_user(username='author_username', password=self.password)
+        self.user = User.objects.create_user(username=self.username,
+                                             password=self.password)
+        self.author = User.objects.create_user(username='author_username',
+                                               password=self.password)
         self.client.login(username=self.username, password=self.password)
-        self.group = Group.objects.create(title='test_group', slug='test_group_slug')
+        self.group = Group.objects.create(title='test_group',
+                                          slug='test_group_slug')
 
     def test_auth_user_can_follow_or_unfollow_author(self):
-        response_profile = self.client.get(reverse('profile', args=[self.author.username]))
+        response_profile = self.client.get(
+            reverse('profile', args=[self.author.username]))
         self.assertContains(response_profile, 'Подписаться')
 
         self.client.post(reverse('follow', args=[self.author.username]))
-        response_profile2 = self.client.get(reverse('profile', args=[self.author.username]))
+        response_profile2 = self.client.get(
+            reverse('profile', args=[self.author.username]))
         self.assertContains(response_profile2, 'Отписаться')
 
         self.client.post(reverse('unfollow', args=[self.author.username]))
-        response_profile2 = self.client.get(reverse('profile', args=[self.author.username]))
+        response_profile2 = self.client.get(
+            reverse('profile', args=[self.author.username]))
         self.assertContains(response_profile2, 'Подписаться')
 
     def test_auth_user_can_follow_or_unfollow_group(self):
-        response_profile = self.client.get(reverse('group', args=[self.group.slug]))
+        response_profile = self.client.get(
+            reverse('group', args=[self.group.slug]))
         self.assertContains(response_profile, 'Подписаться')
 
         self.client.post(reverse('follow_group', args=[self.group.slug]))
-        response_profile2 = self.client.get(reverse('group', args=[self.group.slug]))
+        response_profile2 = self.client.get(
+            reverse('group', args=[self.group.slug]))
         self.assertContains(response_profile2, 'Отписаться')
 
         self.client.post(reverse('unfollow_group', args=[self.group.slug]))
-        response_profile2 = self.client.get(reverse('group', args=[self.group.slug]))
+        response_profile2 = self.client.get(
+            reverse('group', args=[self.group.slug]))
         self.assertContains(response_profile2, 'Подписаться')
 
     def test_not_auth_user_can_not_follow_or_unfollow(self):
         self.client.logout()
-        response = self.client.get(reverse('profile', args=[self.author.username]))
+        response = self.client.get(
+            reverse('profile', args=[self.author.username]))
         self.assertNotContains(response, 'Подписаться' or 'Отписаться')
 
     def test_new_post_can_see_only_followers(self):
         Follow.objects.create(user=self.user, author=self.author)
-        Post.objects.create(author=self.author, text='test', title='new_title', slug='slug')
-        response = self.client.get(reverse('your_follows', args=[self.user.username]))
+        Post.objects.create(author=self.author, text='test', title='new_title',
+                            slug='slug')
+        response = self.client.get(
+            reverse('your_follows', args=[self.user.username]))
         self.assertContains(response, 'test' and 'new_title')
 
         not_follower = Client()
-        user2 = User.objects.create_user(username='not_follower', password=self.password)
+        user2 = User.objects.create_user(username='not_follower',
+                                         password=self.password)
         not_follower.login(username='not_follower', password=self.password)
-        response = not_follower.get(reverse('your_follows', args=[user2.username]))
+        response = not_follower.get(
+            reverse('your_follows', args=[user2.username]))
         self.assertNotContains(response, 'test' and 'new_title')
 
 
@@ -252,27 +274,34 @@ class CommentsTest(TestCase):
         self.client = Client()
         self.username = 'testuser'
         self.password = 'difficult_password'
-        self.user = User.objects.create_user(username=self.username, password=self.password)
+        self.user = User.objects.create_user(username=self.username,
+                                             password=self.password)
         self.client.login(username=self.username, password=self.password)
-        self.post = Post.objects.create(author=self.user, text='test', title='new_title', slug='slug')
+        self.post = Post.objects.create(author=self.user, text='test',
+                                        title='new_title', slug='slug')
 
     def test_not_auth_user_can_not_comment(self):
         self.client.logout()
-        response = self.client.get(reverse('post_view', args=[self.user.username, self.post.slug]))
+        response = self.client.get(
+            reverse('post_view', args=[self.user.username, self.post.slug]))
         self.assertNotContains(response, 'Добавить комментарий' and 'Отправить')
 
     def test_auth_user_can_comment(self):
-        response = self.client.post(reverse('post_view', args=[self.user.username, self.post.slug]), data={
-            'post': self.post,
-            'author': self.user,
-            'text': 'Test_comment'
-        })
+        response = self.client.post(
+            reverse('post_view', args=[self.user.username, self.post.slug]),
+            data={
+                'post': self.post,
+                'author': self.user,
+                'text': 'Test_comment'
+            })
         self.assertEqual(response.status_code, 302)
-        response_check = self.client.get(reverse('post_view', args=[self.user.username, self.post.slug]))
+        response_check = self.client.get(
+            reverse('post_view', args=[self.user.username, self.post.slug]))
         self.assertContains(response_check, 'Test_comment')
 
     def test_user_can_delete_his_comment(self):
-        comment = Comment.objects.create(post=self.post, author=self.user, text='text')
+        comment = Comment.objects.create(post=self.post, author=self.user,
+                                         text='text')
         self.client.post(reverse('delete_comment', args=[comment]))
         self.assertEqual(Comment.objects.all().count(), 0)
 
@@ -280,12 +309,16 @@ class CommentsTest(TestCase):
 class GroupListTest(TestCase):
     def setUp(self) -> None:
         self.client = Client()
-        self.group = Group.objects.create(title='test_group1', slug='test_group_slug1')
-        self.group = Group.objects.create(title='test_group2', slug='test_group_slug2')
+        self.group = Group.objects.create(title='test_group1',
+                                          slug='test_group_slug1')
+        self.group = Group.objects.create(title='test_group2',
+                                          slug='test_group_slug2')
 
     def test_group_list(self):
         response = self.client.get(reverse('group_list'))
-        self.assertContains(response, 'test_group1' and 'test_group_slug1' and 'test_group2' and 'test_group_slug2')
+        self.assertContains(response,
+                            'test_group1' and 'test_group_slug1' and
+                            'test_group2' and 'test_group_slug2')
 
 
 class DeletePostTest(TestCase):
@@ -293,11 +326,17 @@ class DeletePostTest(TestCase):
         self.client = Client()
         self.username = 'testuser'
         self.password = 'difficult_password'
-        self.user = User.objects.create_user(username=self.username, password=self.password)
+        self.user = User.objects.create_user(username=self.username,
+                                             password=self.password)
         self.client.login(username=self.username, password=self.password)
-        self.author = User.objects.create_user(username='author', password=self.password)
-        self.your_post = Post.objects.create(author=self.user, text='test', title='new_title', slug='slug')
-        self.not_your_post = Post.objects.create(author=self.author, text='test2', title='new_title2', slug='slug2')
+        self.author = User.objects.create_user(username='author',
+                                               password=self.password)
+        self.your_post = Post.objects.create(author=self.user, text='test',
+                                             title='new_title', slug='slug')
+        self.not_your_post = Post.objects.create(author=self.author,
+                                                 text='test2',
+                                                 title='new_title2',
+                                                 slug='slug2')
 
     def test_user_can_delete_his_post(self):
         self.client.post(reverse('delete_post', args=[self.your_post.slug]))
@@ -313,14 +352,18 @@ class Profile(TestCase):
         self.client = Client()
         self.username = 'testuser'
         self.password = 'difficult_password'
-        self.user = User.objects.create_user(username=self.username, password=self.password)
+        self.user = User.objects.create_user(username=self.username,
+                                             password=self.password)
         self.client.login(username=self.username, password=self.password)
 
     def test_profile_with_posts(self):
-        Post.objects.create(author=self.user, text='test', title='new_title', slug='slug')
-        response = self.client.get(reverse('profile', args=[self.user.username]))
+        Post.objects.create(author=self.user, text='test', title='new_title',
+                            slug='slug')
+        response = self.client.get(
+            reverse('profile', args=[self.user.username]))
         self.assertEqual(response.status_code, 200)
 
     def test_profile_without_posts(self):
-        response = self.client.get(reverse('profile', args=[self.user.username]))
+        response = self.client.get(
+            reverse('profile', args=[self.user.username]))
         self.assertEqual(response.status_code, 200)

@@ -35,6 +35,7 @@ urlpatterns = [
     path('500/', server_error),
     path("__debug__/", include(debug_toolbar.urls)),
 
+    path('follow/', include('follows.urls')),
     path('', include('posts.urls')),
 
 ]

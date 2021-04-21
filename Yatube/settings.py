@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
     "debug_toolbar",
     'sorl.thumbnail',
+    'follows',
     'posts',
     'Users',
 ]

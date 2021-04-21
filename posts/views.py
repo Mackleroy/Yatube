@@ -7,8 +7,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import cache_page
 
+from follows.models import Follow
 from .forms import PostForm, PostEditForm, AddCommentForm
-from .models import Post, Group, Comment, Follow
+from .models import Post, Group, Comment
 
 
 class PaginatePage:
@@ -118,7 +119,11 @@ class CreatePostView(View):
             form.save()
             return redirect('/')
         else:
-            return redirect(request.path)
+            return render(request, 'create_edit_post.html', {
+                'form': form,
+                'title': 'Создание записи',
+                'button': 'Создать'
+                })
 
 
 @method_decorator(login_required, name='dispatch')
@@ -146,7 +151,12 @@ class PostEditView(View):
             post.save()
             return redirect('/')
         else:
-            return redirect(request.path)
+            return render(request, 'create_edit_post.html', {
+                'form': form,
+                'post_slug': post_slug,
+                'title': 'Редактирование записи',
+                'button': 'Обновить'
+            })
 
 
 class DeletePostView(View):
@@ -164,43 +174,6 @@ class DeleteCommentView(View):
             comment.delete()
         return redirect('post_view', username=comment.post.author.username,
                         post_slug=comment.post.slug)
-
-
-class FollowsView(View, PaginatePage):
-    def get(self, request, username):
-        posts = Post.objects.select_related('author', 'group').filter(
-            Q(author__in=Follow.objects.filter(
-                user__username=username).values_list('author')) |
-            Q(group__in=Follow.objects.filter(
-                user__username=username).values_list('group'))
-        ).order_by('-published_date')
-        paginator, page = self.paginate(request, posts)
-        return render(request, 'index.html',
-                      {'page': page, 'paginator': paginator})
-
-
-class FollowView(View):
-    def post(self, request, username=None, group_slug=None):
-        if group_slug is not None:
-            Follow.objects.create(user=request.user,
-                                  group=Group.objects.get(slug=group_slug))
-            return redirect('group', group_slug)
-        elif username is not None:
-            Follow.objects.create(user=request.user,
-                                  author=User.objects.get(username=username))
-            return redirect('profile', username)
-
-
-class UnfollowView(View):
-    def post(self, request, username=None, group_slug=None):
-        if group_slug is not None:
-            Follow.objects.get(user=request.user, group=Group.objects.get(
-                slug=group_slug)).delete()
-            return redirect('group', group_slug)
-        elif username is not None:
-            Follow.objects.get(user=request.user, author=User.objects.get(
-                username=username)).delete()
-            return redirect('profile', username)
 
 
 def page_not_found(request, exception):

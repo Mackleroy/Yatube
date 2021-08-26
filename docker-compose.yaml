@@ -1,22 +1,32 @@
-version: '3.8'
-
-volumes:
-  postgres_data:
+version: '3.7'
 
 services:
+  web:
+    build: ./Yatube
+    command: gunicorn Yatube.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./Yatube/:/usr/src/app/
+      - static_volume:/usr/src/app/static
+    expose:
+      - 8000
+    env_file:
+      - ./.env
   db:
-    image: postgres:12.4
+    image: postgres:12.0-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
-  web:
-    build: .
-    restart: always
-    command: gunicorn Yatube.wsgi:application --bind 0.0.0.0:8000
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/usr/src/app/static
     ports:
-      - "8000:8000"
+      - 1337:80
     depends_on:
-      - db
-    env_file:
-      - ./.env
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
+

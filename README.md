@@ -21,7 +21,7 @@ Make .env from .env*example with your personal data
 
 Then use
 ```
-sudo docker-compose -f docker-compose.prod.yaml up --build
+sudo docker-compose -f docker-compose.local.yaml up --build
 ```
 
 ## 2) For web-server usage:

@@ -11,23 +11,17 @@ Clone repository:
 ```
 git clone https://github.com/Mackleroy/Yatube.git
 ```
-Create virtual environment and activate it
+Install Docker and Docker-compose as is said in official guide: https://docs.docker.com/engine/install/
+
+Come in root directory of project
 ```
-python3 -m venv venv
-source venv/bin/activate
+cd Yatube/
 ```
-Install all dependencies 
+Make .env from .env*example with your personal data
+
+Then use
 ```
-pip install -r requirements.txt
-```
-Then come in root derictory of project and apply regular configurations
-```
-python3 manage.py makemigratons
-python3 manage.py migrate
-```
-Start server
-```
-python3 manage.py runserver
+sudo docker-compose -f docker-compose.prod.yaml up --build
 ```
 
 ## 2) For web-server usage:
@@ -40,10 +34,12 @@ Install Docker and Docker-compose as is said in official guide: https://docs.doc
 Come in root directory of project
 ```
 cd Yatube/
+
+Make .env from .env*example with your personal data
 ```
 Then use
 ```
-sudo docker-compose up --build
+sudo docker-compose -f docker-compose.prod.yaml up --build
 ```
 To activate Docker, list of all availiable containers 
 ```

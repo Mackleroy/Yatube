@@ -47,7 +47,7 @@ sudo docker-compose up --build
 ```
 To activate Docker, list of all availiable containers 
 ```
-sudo docker container ls -a
+sudo docker ps
 ```
 Find yatube_web_1 container
 

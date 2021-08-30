@@ -11,9 +11,9 @@ services:
     env_file:
       - ./.env
   web:
-    build: .
+    build: Yatube
     restart: always
-    command: gunicorn Yatube.wsgi:application --bind 0.0.0.0:8000
+    command: python3 manage.py runserver 0.0.0.0:8000 --noreload
     ports:
       - "8000:8000"
     depends_on:

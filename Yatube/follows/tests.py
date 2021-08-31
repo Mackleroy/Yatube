@@ -7,6 +7,7 @@ from posts.models import Group, Post
 
 
 class FollowUnfollowTest(TestCase):
+    """Test auth/not auth user can subscribe/unsubscribe and see followed posts"""
     def setUp(self) -> None:
         self.client = Client()
         self.username = 'testuser'

@@ -34,9 +34,9 @@ Install Docker and Docker-compose as is said in official guide: https://docs.doc
 Come in root directory of project
 ```
 cd Yatube/
-
-Make .env from .env*example with your personal data
 ```
+Make .env from .env*example with your personal data
+
 Then use
 ```
 sudo docker-compose -f docker-compose.prod.yaml up --build

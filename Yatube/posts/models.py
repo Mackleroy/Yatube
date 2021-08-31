@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Group(models.Model):
+    """Class of Group model"""
     title = models.CharField("Заголовок", max_length=70)
     creator = models.ForeignKey(User, verbose_name="Создатель",
                                 on_delete=models.CASCADE, max_length=70,
@@ -21,6 +22,7 @@ class Group(models.Model):
 
 
 class Post(models.Model):
+    """Class of Post model"""
     author = models.ForeignKey(User, verbose_name="Автор",
                                on_delete=models.CASCADE, max_length=70,
                                null=True, related_name='posts')
@@ -43,6 +45,7 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
+    """Class of Comment model"""
     post = models.ForeignKey(Post, verbose_name='Пост',
                              on_delete=models.CASCADE, null=True,
                              related_name='comments')

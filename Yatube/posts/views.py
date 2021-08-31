@@ -13,6 +13,7 @@ from .models import Post, Group, Comment
 
 
 class PaginatePage:
+    """ Subclass for pagination of queryset"""
     def paginate(self, request, queryset):
         paginator = Paginator(queryset, 3)
         page_number = request.GET.get('page')
@@ -22,6 +23,7 @@ class PaginatePage:
 
 @method_decorator(cache_page(60 * 3, key_prefix="main_page"), name='dispatch')
 class MainPageView(View, PaginatePage):
+    """Output of main page with all existing posts"""
     def get(self, request):
         posts = Post.objects.select_related('author', 'group').all().order_by(
             '-published_date')
@@ -31,12 +33,14 @@ class MainPageView(View, PaginatePage):
 
 
 class GroupList(View):
+    """Output of all existing and moderated groups"""
     def get(self, request):
         return render(request, 'group_list.html',
                       {'groups': Group.objects.filter(moderation=True)})
 
 
 class GroupView(View, PaginatePage):
+    """Posts output of exact group"""
     def get(self, request, group_slug):
         group = Group.objects.select_related('creator').get(slug=group_slug)
         posts = group.posts.select_related('author', 'group').all().order_by(
@@ -53,6 +57,7 @@ class GroupView(View, PaginatePage):
 
 
 class ProfileView(View, PaginatePage):
+    """Users profile with posts if they exist"""
     def get(self, request, username):
         try:
             posts = Post.objects.select_related('author', 'group').filter(
@@ -79,6 +84,7 @@ class ProfileView(View, PaginatePage):
 
 
 class PostAndCommentView(View):
+    """Individual post page with comments"""
     def get(self, request, username, post_slug):
         post = get_object_or_404(Post, author__username=username,
                                  slug=post_slug)
@@ -104,6 +110,7 @@ class PostAndCommentView(View):
 
 @method_decorator(login_required, name='dispatch')
 class CreatePostView(View):
+    """Post creation page"""
     def get(self, request):
         return render(request, 'create_edit_post.html', {
             'form': PostForm(),
@@ -128,6 +135,7 @@ class CreatePostView(View):
 
 @method_decorator(login_required, name='dispatch')
 class PostEditView(View):
+    """Edit post page"""
     def get(self, request, username, post_slug):
         post = Post.objects.get(slug=post_slug)
         if request.user.username == post.author.username:
@@ -160,6 +168,7 @@ class PostEditView(View):
 
 
 class DeletePostView(View):
+    """Delete post page"""
     def post(self, request, post_slug):
         post = Post.objects.get(slug=post_slug)
         if request.user == post.author:
@@ -168,6 +177,7 @@ class DeletePostView(View):
 
 
 class DeleteCommentView(View):
+    """Delete post page"""
     def post(self, request, comment_pk):
         comment = Comment.objects.get(pk=comment_pk)
         if request.user == comment.author:

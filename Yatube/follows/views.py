@@ -9,6 +9,7 @@ from posts.views import PaginatePage
 
 
 class FollowsView(View, PaginatePage):
+    """Posts output of all subscribed users and groups"""
     def get(self, request, username):
         posts = Post.objects.select_related('author', 'group').filter(
             Q(author__following__user=request.user) |
@@ -20,6 +21,7 @@ class FollowsView(View, PaginatePage):
 
 
 class FollowView(View):
+    """Subscribe on group or user"""
     def post(self, request, username=None, group_slug=None):
         if group_slug is not None:
             Follow.objects.create(user=request.user,
@@ -32,6 +34,7 @@ class FollowView(View):
 
 
 class UnfollowView(View):
+    """Unsubscribe on group or user"""
     def post(self, request, username=None, group_slug=None):
         if group_slug is not None:
             Follow.objects.get(user=request.user,

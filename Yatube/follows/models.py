@@ -5,6 +5,7 @@ from posts.models import Group
 
 
 class Follow(models.Model):
+    """Class of Follow model"""
     user = models.ForeignKey(User, verbose_name="Автор",
                              on_delete=models.CASCADE, blank=True,
                              null=True, related_name='follower', )

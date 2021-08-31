@@ -10,6 +10,7 @@ from posts.models import Post, Group, Comment
 
 
 class TestManyUrlsToCheck:
+    """Universal setUp for first tests"""
     def setUp(self):
         self.client = Client()
         self.username = 'testuser'
@@ -31,6 +32,7 @@ class TestManyUrlsToCheck:
 
 
 class PostTests(TestManyUrlsToCheck, TestCase):
+    """ Test if new post exists on all possible pages"""
     def test_publication_on_all_pages(self):
         self.client.login(username=self.username, password=self.password)
         self.client.post(reverse('create_post'), data={
@@ -48,6 +50,7 @@ class PostTests(TestManyUrlsToCheck, TestCase):
 
 
 class UserPublishPost(TestManyUrlsToCheck, TestCase):
+    """Posting test auth/not auth and invalid data"""
     def test_auth_user_can_post(self):
         response = self.client.get(reverse('create_post'))
         self.assertEqual(response.status_code, 200)
@@ -89,6 +92,7 @@ class UserPublishPost(TestManyUrlsToCheck, TestCase):
 
 
 class RegistrationTests(TestCase):
+    """Check if user successfully registered and profile exists"""
     def setUp(self):
         self.client = Client()
         self.username = 'testuser'
@@ -110,6 +114,7 @@ class RegistrationTests(TestCase):
 
 
 class ErrorsTest(TestCase):
+    """Test if 404 page exists and work"""
     def test_404(self):
         response = self.client.get(reverse('post_view',
                                            args=['not_existing_user',
@@ -119,6 +124,7 @@ class ErrorsTest(TestCase):
 
 
 class ImagesTest(TestCase):
+    """Test if image downloadable and only image format is required"""
     def setUp(self) -> None:
         self.client = Client()
         self.username = 'testuser'
@@ -179,6 +185,7 @@ class ImagesTest(TestCase):
 
 
 class CacheTest(TestCase):
+    """Cache testing with new post creation on mane page"""
     def setUp(self) -> None:
         self.client = Client()
         self.user = User.objects.create_user(username='testuser',
@@ -204,6 +211,7 @@ class CacheTest(TestCase):
 
 
 class CommentsTest(TestCase):
+    """Test auth/not auth user comment and delete post"""
     def setUp(self) -> None:
         self.client = Client()
         self.username = 'testuser'
@@ -241,6 +249,7 @@ class CommentsTest(TestCase):
 
 
 class GroupListTest(TestCase):
+    """Group output test"""
     def setUp(self) -> None:
         self.client = Client()
         self.group = Group.objects.create(title='test_group1',
@@ -256,6 +265,7 @@ class GroupListTest(TestCase):
 
 
 class DeletePostTest(TestCase):
+    """Test only author can delete his post"""
     def setUp(self) -> None:
         self.client = Client()
         self.username = 'testuser'
@@ -282,6 +292,7 @@ class DeletePostTest(TestCase):
 
 
 class Profile(TestCase):
+    """Test profile with and without posts"""
     def setUp(self) -> None:
         self.client = Client()
         self.username = 'testuser'
